@@ -1,0 +1,18 @@
+.sidebar {
+    background-color: #f8f9fa;
+    padding: 20px;
+    height: 100vh;
+    width: 200px; /* Fixed width for the sidebar */
+    position: fixed; /* Fix the sidebar to the left side */
+}
+
+.sidebar-link {
+    display: block;
+    padding: 10px 0;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.sidebar-link:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,23 @@
+.header {
+    background-color: #343a40;
+    padding: 10px 20px;
+    color: white;
+}
+
+.nav {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.headerButton {
+    margin-left: 20px;
+}
+
+.headerButton a {
+    color: white;
+    text-decoration: none;
+}
+
+.headerButton a:hover {
+    text-decoration: underline;
+}
