@@ -1,5 +1,6 @@
 package com.rtsp.rtspserver.server.method;
 
+import com.rtsp.rtspserver.config.RtspProperties;
 import com.rtsp.rtspserver.server.RtspServerHandler;
 import com.rtsp.rtspserver.server.RtspSession;
 import io.netty.buffer.Unpooled;
@@ -12,6 +13,7 @@ import org.bytedeco.ffmpeg.avutil.AVDictionary;
 import org.bytedeco.ffmpeg.global.avformat;
 import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacpp.PointerPointer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
 
@@ -100,7 +102,7 @@ public class DescribeAction implements MethodAction {
     }
     private String createSdpDescriptionTpLink2(String rtspUrl) {
         return "v=0\r\n"
-                + "o=- 1293913308916078 1 IN IP4 192.168.0.183\r\n"
+                + "o=- 1293913308916078 1 IN IP4 "+ rtspUrl+"\r\n"
                 + "s=RTSP/RTP stream 2 from DCS-2103\r\n"
                 + "i=live2.sdp\r\n"
                 + "c=IN IP4 0.0.0.0\r\n"
@@ -116,7 +118,6 @@ public class DescribeAction implements MethodAction {
                 + "a=rtpmap:96 H264/90000\r\n"
                 + "a=fmtp:96 packetization-mode=1; profile-level-id=640028; sprop-parameter-sets=Z2QAKK2EBUViuKxUdCAqKxXFYqOhAVFYrisVHQgKisVxWKjoQFRWK4rFR0ICorFcVio6ECSFITk8nyfk/k/J8nm5s00IEkKQnJ5Pk/J/J+T5PNzZprQFAX/LgKpAAAADAEAAACWYEAALcbAADN/i974XhEI1,aO48sA==\r\n"
                 + "a=control:streamid=0\r\n";
-
     }
 
 

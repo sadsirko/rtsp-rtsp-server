@@ -53,9 +53,11 @@ public class RtspSession {
             this.frameSender.unsubscribe(this);
             this.frameSender = newSender;
             this.frameSender.subscribe(this);
-            // Переініціалізація recorder з новим sender якщо потрібно
+
             if (recorder != null) {
                 try {
+                    recorder.stop();
+                    recorder.release();
                     prepareFrameRecorder(newSender.getGrabber());
                 } catch (FFmpegFrameRecorder.Exception e) {
                     throw new RuntimeException(e);
@@ -63,6 +65,7 @@ public class RtspSession {
             }
         }
     }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof RtspSession) {

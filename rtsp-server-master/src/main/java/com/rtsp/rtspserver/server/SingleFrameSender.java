@@ -138,6 +138,7 @@ public class SingleFrameSender {
 
         public void close() {
         try {
+            System.out.println("removing connection inside of SingleSender");
             subscribers.forEach(RtspSession::end);
             subscribers.clear();
             grabber.close();
@@ -154,6 +155,10 @@ public class SingleFrameSender {
     public long getFrameSendDelay() {
         long nowTime = System.currentTimeMillis();
         return (nextTimeStamp - startTimeStamp) - (nowTime - startRealTimeMillis);
+    }
+
+    public String getRtspUrl() {
+        return rtspUrl;
     }
 
     public boolean isInitialized() {

@@ -13,6 +13,10 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.rtsp.RtspDecoder;
 import io.netty.handler.codec.rtsp.RtspEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -22,12 +26,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
+@Component
 public class RtspServer {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
     private String serverHost;
 
-    private int serverPort;
+    private int serverPort = 554;
 
     private ServerBootstrap serverBootstrap;
 
@@ -37,12 +42,16 @@ public class RtspServer {
 
     private ChannelFuture channelFuture;
 
+    @Autowired
     private RtspStreamManager rtspStreamManager;
     private RecordingManager recordingManager;
-
-    public RtspServer(int serverPort) {
-        this.serverPort = serverPort;
-        this.rtspStreamManager = new RtspStreamManager();
+    @Autowired
+    private ApplicationContext applicationContext; //
+    @Autowired
+    public RtspServer() {
+//        this.serverPort = serverPort;
+//        this.rtspStreamManager = new RtspStreamManager();
+//        this.rtspStreamManager = RtspStreamManager.getInstance();
 
     }
 
@@ -60,13 +69,16 @@ public class RtspServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel channel) {
+                            RtspServerHandler rtspServerHandler = applicationContext.getBean(RtspServerHandler.class);
                             channel.pipeline().addLast(
                                     new RtspDecoder(),
                                     new RtspEncoder(),
                                     new HttpObjectAggregator(64 * 1024),
-                                    new RtspServerHandler(serverHost,rtspStreamManager));
+                                    rtspServerHandler
+                            );
                         }
                     });
+
             startSendingRtspFrames();
 
             channelFuture = serverBootstrap.bind(serverHost, serverPort).syncUninterruptibly();

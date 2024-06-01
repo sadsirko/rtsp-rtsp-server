@@ -8,12 +8,17 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.rtsp.RtspVersions;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
+@Component
+@Scope("prototype")
 public class RtspServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     @Getter
     private String rtspSourceUrl;
@@ -22,9 +27,9 @@ public class RtspServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     private Map<Channel, RtspSession> lstChannels = new HashMap<>();
 
-    public RtspServerHandler(String rtspSourceUrl, RtspStreamManager rtspStreamManager) {
+    @Autowired
+    public RtspServerHandler(RtspStreamManager rtspStreamManager) {
         this.rtspStreamManager = rtspStreamManager;
-        this.rtspSourceUrl = rtspSourceUrl;
     }
 
     public String getRtspSourceUrl() {
@@ -54,7 +59,8 @@ public class RtspServerHandler extends SimpleChannelInboundHandler<FullHttpReque
             }
         }
         return "Invalid URL";
-    }    protected static String extractURLWithoutId(String input) {
+    }
+    protected static String extractURLWithoutId(String input) {
         int portIndex = input.indexOf(":");
         if (portIndex != -1) {
             int secondSlashIndex = input.indexOf("/", portIndex + 3);
@@ -73,6 +79,7 @@ public class RtspServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         Channel channel = ctx.channel();
         HttpMethod method = request.method();
         String uri = request.uri();
+        log.info(uri);
         String streamUrl = extractURL(uri);
         String streamUrlSETUP = extractURLWithoutId(uri);
 
@@ -92,10 +99,13 @@ public class RtspServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         }
 
         RtspSession session = lstChannels.get(channel);
+
         if (session == null) {
+            log.info("get it {}", sender.getRtspUrl());
             session = new RtspSession(channel, sender);
             lstChannels.put(channel, session);
         } else {
+            log.info("already have channel {}", sender.getRtspUrl());
             session.updateSender(sender);
         }
 

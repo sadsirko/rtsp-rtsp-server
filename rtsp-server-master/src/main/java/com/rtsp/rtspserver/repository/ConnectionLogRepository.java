@@ -20,6 +20,7 @@ public class ConnectionLogRepository {
         this.conn = DatabaseConnection.getConnection();
     }
 
+
     public ConnectionLog getConnectionLogById(int connectionId) {
         String sql = "SELECT * FROM ConnectionLogs WHERE connection_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {

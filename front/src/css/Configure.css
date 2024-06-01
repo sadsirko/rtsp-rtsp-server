@@ -1,0 +1,30 @@
+.button-common {
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button-common.primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.button-common.danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.button-common.success {
+    background-color: #28a745;
+    color: white;
+}
+
+.input-common {
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+}

@@ -5,20 +5,16 @@ import com.rtsp.rtspserver.server.events.CameraAddedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
-import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.FrameRecorder;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Component
+
 @Slf4j
+@Component
 public class RtspStreamManager {
+
     private ConcurrentHashMap<String, SingleFrameSender> frameSenders;
     private AtomicInteger idGenerator;
     private ScheduledExecutorService executor ;
@@ -35,17 +31,31 @@ public class RtspStreamManager {
         SingleFrameSender sender = new SingleFrameSender(streamUrl);
         sender.init();
         frameSenders.put(streamUrl, sender);
-        System.out.println(frameSenders.get(streamUrl).toString());
-        System.out.println(streamUrl);
+//        log.info("added stream {}",  frameSenders.get(streamUrl).toString());
+        log.info("added stream {}",  frameSenders.get(streamUrl).getRtspUrl());
+        printAllStreams();
+//        System.out.println(frameSenders.get(streamUrl).toString());
     }
+    public void printAllStreams() {
+        log.info("all_streams");
 
+        frameSenders.forEach((id, sender) -> {
+            System.out.println( sender.getRtspUrl());
+        });
+    }
     // Метод для видалення потоку
-    public boolean removeStream(int streamId) {
-        SingleFrameSender sender = frameSenders.remove(streamId);
+    public boolean removeStream(String streamUrl) {
+        printAllStreams();
+        SingleFrameSender sender = frameSenders.remove(streamUrl);
+        log.info("removing connection inside of Manager");
+
         if (sender != null) {
+            System.out.println("removing connection inside because sender");
             sender.close();  // Закрити і звільнити ресурси
             return true;
         }
+        printAllStreams();
+
         return false;
     }
 
@@ -65,6 +75,7 @@ public class RtspStreamManager {
 
     public void sendAllCameras() {
         frameSenders.forEach((id, sender) -> {
+//            log.info("lsend all {}",id);
             long delay = sender.getFrameSendDelay();  // Затримка визначається в кожному sender'і
             executor.schedule(() -> {
                 try {

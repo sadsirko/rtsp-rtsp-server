@@ -1,37 +1,21 @@
 package com.rtsp.rtspserver.model;
 
+import org.springframework.security.crypto.bcrypt.BCrypt;
+
 public class User {
     private int userId;
     private String userLogin;
     private int roleId;
-    private String salt;
     private String hashPassword;
-    private String password;
 
-    // repo
-    public User(int userId, String userLogin, int roleId, String salt, String hashPassword) {
-        this.userId = userId;
-        this.userLogin = userLogin;
-        this.roleId = roleId;
-        this.salt = salt;
-        this.hashPassword = hashPassword;
-    }
-
-    // info
-    public User(int userId, String userLogin, int roleId) {
-        this.userId = userId;
-        this.userLogin = userLogin;
-        this.roleId = roleId;
-    }
-    //creation
     public User(int userId, String userLogin, int roleId, String password) {
         this.userId = userId;
         this.userLogin = userLogin;
         this.roleId = roleId;
-        this.password = password;
+        this.hashPassword = BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
-
+    // Getters and setters
     public int getUserId() {
         return userId;
     }
@@ -56,24 +40,8 @@ public class User {
         this.roleId = roleId;
     }
 
-    public String getSalt() {
-        return salt;
-    }
-
-    public void setSalt(String salt) {
-        this.salt = salt;
-    }
-
     public String getHashPassword() {
         return hashPassword;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public void setHashPassword(String hashPassword) {

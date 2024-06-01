@@ -1,13 +1,15 @@
 package com.rtsp.rtspserver.repository;
 
 import com.rtsp.rtspserver.model.User;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.stereotype.Repository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class UserRepository {
@@ -17,83 +19,93 @@ public class UserRepository {
         this.conn = DatabaseConnection.getConnection();
     }
 
-    public User getUserById(int userId) {
-        String sql = "SELECT user_id, user_login, role_id FROM Users WHERE user_id = ?";
+    public User addUser(User user) {
+        String sql = "INSERT INTO Users (user_login, role_id, hash_password) VALUES (?, ?, ?) RETURNING user_id";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            System.out.println(user.getUserLogin() + user.getRoleId() + user.getHashPassword());
+            pstmt.setString(1, user.getUserLogin());
+            pstmt.setInt(2, user.getRoleId());
+            pstmt.setString(3, user.getHashPassword());
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                user.setUserId(rs.getInt(1));
+                return user;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public User findUserById(int userId) {
+        String sql = "SELECT * FROM Users WHERE user_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, userId);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                return new User(rs.getInt("user_id"),
-                        rs.getString("user_login"),
-                        rs.getInt("role_id"));
+                return new User(rs.getInt("user_id"), rs.getString("user_login"), rs.getInt("role_id"), rs.getString("hash_password"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public void addUser(User user) {
-        String salt = BCrypt.gensalt();
-        String hashedPassword = BCrypt.hashpw(user.getPassword(), salt);
-        String sql = "INSERT INTO Users (user_login, role_id, salt, hash_password) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, user.getUserLogin());
-            pstmt.setInt(2, user.getRoleId());
-            pstmt.setString(3, salt);
-            pstmt.setString(4, hashedPassword);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public boolean updateUser(User user) {
-        String salt = BCrypt.gensalt();
-        String hashedPassword = BCrypt.hashpw(user.getPassword(), salt);
-        String sql = "UPDATE Users SET user_login = ?, role_id = ?, salt = ?, hash_password = ? WHERE user_id = ?";
+        String sql = "UPDATE Users SET user_login = ?, role_id = ?, hash_password = ? WHERE user_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, user.getUserLogin());
             pstmt.setInt(2, user.getRoleId());
-            pstmt.setString(3, salt);
-            pstmt.setString(4, hashedPassword);
-            pstmt.setInt(5, user.getUserId());
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
+            pstmt.setString(3, user.getHashPassword());
+            pstmt.setInt(4, user.getUserId());
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    public User getUserByLogin(String userLogin) {
-        String sql = "SELECT user_id, user_login, role_id FROM Users WHERE user_login = ?";
+    public boolean deleteUser(int userId) {
+        String sql = "DELETE FROM Users WHERE user_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM Users";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                users.add(new User(rs.getInt("user_id"), rs.getString("user_login"), rs.getInt("role_id"), rs.getString("hash_password")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+    public Optional<User> findByUserLogin(String userLogin) {
+        String sql = "SELECT * FROM Users WHERE user_login = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, userLogin);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                return new User(rs.getInt("user_id"),
+                return Optional.of(new User(
+                        rs.getInt("user_id"),
                         rs.getString("user_login"),
-                        rs.getInt("role_id"));
+                        rs.getInt("role_id"),
+                        rs.getString("hash_password")
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return Optional.empty();
     }
 
-    public boolean validatePassword(String userLogin, String password) {
-        String sql = "SELECT hash_password FROM Users WHERE user_login = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, userLogin);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                String hashedPassword = rs.getString("hash_password");
-                return BCrypt.checkpw(password, hashedPassword);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 }

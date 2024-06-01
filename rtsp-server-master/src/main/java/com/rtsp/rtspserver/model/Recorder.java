@@ -7,18 +7,30 @@ public class Recorder {
     private int cameraId;
     private Timestamp startTime;
     private Timestamp endTime;
+    private int durationTime;
 
-    public Recorder(int recordId, int cameraId, Timestamp startTime, Timestamp endTime) {
+    public int getDurationTime() {
+        return durationTime;
+    }
+
+    public void setDurationTime(int durationTime) {
+        this.durationTime = durationTime;
+    }
+
+    public Recorder(int recordId, int cameraId, Timestamp startTime, Timestamp endTime, int duration ) {
         this.recordId = recordId;
         this.cameraId = cameraId;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.durationTime =duration;
     }
 
-    public Recorder(int cameraId, Timestamp startTime, Timestamp endTime) {
+    public Recorder(int cameraId, Timestamp startTime, Timestamp endTime, int duration) {
         this.cameraId = cameraId;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.durationTime =duration;
+
     }
 
     public int getRecordId() {

@@ -1,6 +1,5 @@
 package com.rtsp.rtspserver.repository;
 
-import com.rtsp.rtspserver.repository.DatabaseConnection;
 import com.rtsp.rtspserver.model.Camera;
 import org.springframework.stereotype.Repository;
 
@@ -22,10 +21,10 @@ public class CameraRepository {
         }
     }
 
-    public Camera getCameraById(int cameraId) {
+    public Camera findById(int cameraId) {
         String sql = "SELECT * FROM Cameras WHERE camera_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, cameraId);
+            pstmt.setInt(1, Math.toIntExact(cameraId));
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 return new Camera(rs.getInt("camera_id"),
@@ -71,7 +70,7 @@ public class CameraRepository {
         }
         return false;
     }
-    public boolean deleteCamera(int cameraId) {
+    public boolean delete(int cameraId) {
         String sql = "DELETE FROM Cameras WHERE camera_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, cameraId);
